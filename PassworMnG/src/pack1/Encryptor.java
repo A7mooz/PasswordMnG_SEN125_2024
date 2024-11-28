@@ -1,58 +1,106 @@
 package pack1;
 
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
-import javax.crypto.spec.SecretKeySpec;
-import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
+import javax.crypto.*;
+import javax.crypto.spec.*;
+import java.io.*;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.Base64.Encoder;
 import java.util.Base64.Decoder;
-import java.util.Scanner;
+import java.security.MessageDigest;
+import java.security.SecureRandom;
 
 public class Encryptor {
 	private static Encoder encoder = Base64.getEncoder();
 	private static Decoder decoder = Base64.getDecoder();
 	
-	 // Method to encrypt data
-    public static String encrypt(String data, String password) throws Exception {
-        // Create a key from the password
-        SecretKeySpec key = new SecretKeySpec(getKeyFromPassword(password), "AES");
 
-        // Initialize cipher in ENCRYPT mode
+    // Method to encrypt a file
+    public static void encryptFile(String inputFilePath, String outputFilePath, String key) throws Exception {
+        // Create SecretKeySpec from the provided key (AES)
+        SecretKeySpec secretKey = new SecretKeySpec(getKeyFromPassword(key), "AES");
+
+        // Get AES cipher instance
         Cipher cipher = Cipher.getInstance("AES");
-        cipher.init(Cipher.ENCRYPT_MODE, key);
 
-        // Encrypt the data
-        byte[] encryptedData = cipher.doFinal(data.getBytes());
-        
-        // Return encrypted data as Base64 string
-        return encoder.encodeToString(encryptedData);
+        // Initialize cipher for encryption
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+
+        // Read the input file
+        FileInputStream inputFile = new FileInputStream(inputFilePath);
+        FileOutputStream outputFile = new FileOutputStream(outputFilePath);
+        CipherOutputStream cipherOutputStream = new CipherOutputStream(outputFile, cipher);
+
+        // Encrypt the file and write it to the output file
+        byte[] buffer = new byte[1024];
+        int bytesRead;
+        while ((bytesRead = inputFile.read(buffer)) != -1) {
+            cipherOutputStream.write(buffer, 0, bytesRead);
+        }
+
+        // Close all streams
+        cipherOutputStream.close();
+        inputFile.close();
+        outputFile.close();
     }
     
-    // Method to decrypt data
-    public static String decrypt(String encryptedData, String password) throws Exception {
-        // Create a key from the password
-        SecretKeySpec key = new SecretKeySpec(getKeyFromPassword(password), "AES");
+    // Method to encrypt a file
+    public static void encryptStringToFile(String input, String outputFilePath, String key) throws Exception {
+    	// Create AES key specification
+        SecretKeySpec secretKey = new SecretKeySpec(getKeyFromPassword(key), "AES");
 
-        // Initialize cipher in DECRYPT mode
+        // Create a Cipher object for AES encryption
         Cipher cipher = Cipher.getInstance("AES");
-        cipher.init(Cipher.DECRYPT_MODE, key);
 
-        // Decrypt the data
-        byte[] decodedData = Base64.getDecoder().decode(encryptedData);
-        byte[] decryptedData = cipher.doFinal(decodedData);
+        // Initialize the Cipher with the encryption mode and key
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey);
 
-        // Return decrypted data as string
-        return new String(decryptedData);
+        // Encrypt the string (convert the string to bytes, then encrypt)
+        byte[] encryptedData = cipher.doFinal(input.getBytes());
+        
+        
+        FileOutputStream fileOutputStream = new FileOutputStream(outputFilePath);
+        
+        fileOutputStream.write(encryptedData);
+        
+        fileOutputStream.close();
     }
 
-    // Method to generate a key from a password (using SHA-256)
-    private static byte[] getKeyFromPassword(String password) throws NoSuchAlgorithmException {
+    // Method to decrypt a file and store the result in a variable
+    public static String decryptFileToString(String inputFilePath, String key) throws Exception {
+        // Create SecretKeySpec from the provided key (AES)
+        SecretKeySpec secretKey = new SecretKeySpec(getKeyFromPassword(key), "AES");
+
+        // Get AES cipher instance
+        Cipher cipher = Cipher.getInstance("AES");
+
+        // Initialize cipher for decryption
+        cipher.init(Cipher.DECRYPT_MODE, secretKey);
+
+        // Read the encrypted input file
+        FileInputStream inputFile = new FileInputStream(inputFilePath);
+        CipherInputStream cipherInputStream = new CipherInputStream(inputFile, cipher);
+
+        // Use ByteArrayOutputStream to store the decrypted data
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        byte[] buffer = new byte[1024];
+        int bytesRead;
+        while ((bytesRead = cipherInputStream.read(buffer)) != -1) {
+            outputStream.write(buffer, 0, bytesRead);
+        }
+
+        // Convert the byte array to a string (assuming it's text-based data)
+        String decryptedData = outputStream.toString();
+
+        // Close streams
+        cipherInputStream.close();
+        inputFile.close();
+        outputStream.close();
+
+        return decryptedData;
+    }
+    
+    private static byte[] getKeyFromPassword(String password) throws Exception {
         // Use SHA-256 to hash the password
         MessageDigest sha = MessageDigest.getInstance("SHA-256");
         return sha.digest(password.getBytes());

@@ -18,17 +18,51 @@ public class Interfaces {
 	}
 
 	public static void drawManager() {
-		
+		Authenticator authenticator = new Authenticator();
+		try {
+			Storage storage = new Storage(authenticator);
+			
+			int input = -1;
+			while (input != 0) {
+				System.out.println();
+
+				System.out.print("____________________\n" + "/// Manager \\\\\\\n\n"  +  "1- Add\n" + "2- Read\n" + "0- Menu" + "\n\nInput: ");
+
+				input = scanner.nextInt();
+
+				switch (input) {
+				case 1:
+					System.out.println();
+					System.out.print("\nEnter the name/website: ");
+					String location = scanner.next();
+					System.out.print("\nEnter the email: ");
+					String email = scanner.next();
+					System.out.print("\nEnter the password: ");
+					String password = scanner.next();
+					
+					storage.save(location, email, password);
+					break;
+				case 2:
+					System.out.println();
+					storage.read();
+				case 0:
+					break;
+				default:
+					System.out.println("\nInvalid Input!");
+				}
+			}
+			
+		} catch (Exception e) {
+			
+		}
 	}
 
 	public static void drawGenerator() {
-		System.out.print("\033[H\033[2J");
-		System.out.flush();
 		int input = -1;
 		while (input != 0) {
 			System.out.println();
 
-			System.out.print("1- Generate\n" + "0- Menu" + "\n\nInput: ");
+			System.out.print("____________________\n" + "/// Generator \\\\\\\n\n"  + "1- Generate\n" + "0- Menu" + "\n\nInput: ");
 
 			input = scanner.nextInt();
 

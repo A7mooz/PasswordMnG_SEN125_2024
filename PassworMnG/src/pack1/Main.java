@@ -3,17 +3,7 @@ package pack1;
 public class Main {
 
 	public static void main(String[] args) {
-
-		Interfaces interfaces = new Interfaces();
-		Authenticator authenticator = new Authenticator();
-		Encryptor encryptor = new Encryptor();
-		Storage storage = new Storage();
-		Generator generator = new Generator();
-
-		
-
-		String userInputS;
-		int userInput = 9;
+		int userInput = -1;
 
 		while (userInput != 0) {
 
